@@ -80,9 +80,9 @@ function buildProjects(entries) {
   const blocks = [];
   for (const e of entries) {
     if (!e) continue;
-    const context = e.context ? ` \\emph{$|$ ${escapeLatex(e.context)}}` : '';
+    const context = e.context ? `\\resumeProjectContext{${escapeLatex(e.context)}}` : '';
     const bullets = Array.isArray(e.bullets) ? e.bullets.map(b => `            \\resumeItem{${escapeLatex(b)}}`).join('\n') : '';
-    blocks.push(`    \\resumeProjectHeading\n      {\\textbf{${escapeLatex(e.name)}}${context}}{${escapeLatex(e.dates)}}\n      \\resumeItemListStart\n${bullets}\n      \\resumeItemListEnd`);
+    blocks.push(`    \\resumeProjectHeading\n      {\\textbf{${escapeLatex(e.name)}}}{${escapeLatex(e.dates)}}\n${context}\n      \\resumeItemListStart\n${bullets}\n      \\resumeItemListEnd`);
   }
   return blocks.join('\n\n');
 }

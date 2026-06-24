@@ -22,12 +22,11 @@ import { existsSync, mkdirSync } from 'fs';
 // Projects, Technical Skills). We count \section{} blocks rather than match
 // the English titles, so a localized CV (e.g. "Educación", "学歴") still
 // validates instead of failing with a spurious "Missing section".
-const MIN_SECTIONS = 4;
+const MIN_SECTIONS = 6;
 
 const REQUIRED_COMMANDS = [
-  '\\\\resumeSubheading',
-  '\\\\resumeItem',
-  '\\\\resumeProjectHeading',
+  '\\\\heading\\{',
+  '\\\\begin\\{rsitems\\}',
 ];
 
 // CJK (Japanese/Chinese/Korean) ranges: Hiragana, Katakana, CJK ideographs,
@@ -57,9 +56,9 @@ async function main() {
   const issues = [];
 
   // Check section count (language-agnostic — see MIN_SECTIONS).
-  const sectionCount = (content.match(/\\section\{/g) || []).length;
+  const sectionCount = (content.match(/\\section\*?\{/g) || []).length;
   if (sectionCount < MIN_SECTIONS) {
-    issues.push(`Expected at least ${MIN_SECTIONS} \\section{} blocks (Education, Work Experience, Projects, Skills — or localized equivalents), found ${sectionCount}`);
+    issues.push(`Expected at least ${MIN_SECTIONS} \\section{} blocks (Professional Summary, Technical Skills, Experience, Projects, Education, Achievements — or localized equivalents), found ${sectionCount}`);
   }
 
   // The template cannot render CJK; fail with guidance instead of a broken PDF.
@@ -90,14 +89,12 @@ async function main() {
 
   // Check for common unescaped special chars in text (heuristic)
   const lines = content.split('\n');
-  let resumeItemCount = 0;
-  let subheadingCount = 0;
-  let projectHeadingCount = 0;
+  let rsitemsCount = 0;
+  let headingCount = 0;
 
   for (const line of lines) {
-    if (/\\resumeItem\{/.test(line)) resumeItemCount++;
-    if (/\\resumeSubheading[^C]/.test(line)) subheadingCount++;
-    if (/\\resumeProjectHeading/.test(line)) projectHeadingCount++;
+    if (/\\begin\{rsitems\}/.test(line)) rsitemsCount++;
+    if (/\\heading\{/.test(line)) headingCount++;
   }
 
   // Check pdfgentounicode
@@ -114,9 +111,8 @@ async function main() {
     path: absPath,
     sizeKB: parseFloat(sizeKB),
     counts: {
-      resumeItems: resumeItemCount,
-      subheadings: subheadingCount,
-      projectHeadings: projectHeadingCount,
+      rsitems: rsitemsCount,
+      headings: headingCount,
     },
     issues,
     valid: issues.length === 0,
